@@ -1,0 +1,25 @@
+{
+  "name": "VibeColors",
+  "displayName": "VibeColors",
+  "description": "Vibe color theme",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.104.0"
+  },
+  "categories": [
+    "Themes"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/username/VibeColors.git"
+  },
+  "contributes": {
+    "themes": [
+      {
+        "label": "Vibe color theme",
+        "uiTheme": "vs-dark",
+        "path": "./themes/Vibe color theme-color-theme.json"
+      }
+    ]
+  }
+}
