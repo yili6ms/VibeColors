@@ -1,8 +1,10 @@
 {
-  "name": "VibeColors",
+  "name": "vibecolors",
   "displayName": "VibeColors",
   "description": "Vibe color theme",
-  "version": "0.0.1",
+  "version": "0.0.2",
+  "publisher": "AlexLi",
+  "icon": "vc.png",
   "engines": {
     "vscode": "^1.104.0"
   },
