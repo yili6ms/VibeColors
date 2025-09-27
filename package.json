@@ -2,7 +2,7 @@
   "name": "vibecolors",
   "displayName": "VibeColors",
   "description": "Modern, colorful VS Code theme designed for programmers with comprehensive dark and light variants",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "publisher": "AlexLi",
   "icon": "vc.png",
   "engines": {

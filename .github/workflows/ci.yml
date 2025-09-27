@@ -1,0 +1,60 @@
+name: VS Code Extension CI
+
+on:
+  push:
+    branches: [ master ]
+    tags: [ 'v*' ]         # tag like v1.2.3 to trigger release/publish
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '16'
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      # Optional: lint
+      - name: Lint
+        run: npm run lint --if-present
+
+      # Optional: unit/integration tests
+      - name: Test
+        run: npm test --if-present
+
+      # Build (ensure your package.json has "vscode:prepublish": "npm run compile")
+      - name: Build
+        run: npm run compile
+
+      # Package VSIX
+      - name: Package
+        run: npx @vscode/vsce package --out ./dist/extension.vsix
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: vsix
+          path: dist/extension.vsix
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: vsix
+          path: dist
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/extension.vsix
+          generate_release_notes: true
