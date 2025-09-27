@@ -480,6 +480,43 @@ async function loadSavedPalette() {
         vscode.window.showInformationMessage(`Loaded palette: ${selected.label}`);
     }
 }
+async function regenerateDynamicConfig() {
+    const extensionPath = vscode.extensions.getExtension('AlexLi.vibecolors')?.extensionPath;
+    if (!extensionPath) {
+        vscode.window.showErrorMessage('VibeColors extension not found');
+        return;
+    }
+    try {
+        vscode.window.showInformationMessage('Regenerating dynamic configuration...');
+        // Generate new random seeds for both dark and light themes
+        const darkSeed = Math.floor(Math.random() * 0xffffffff);
+        const lightSeed = Math.floor(Math.random() * 0xffffffff);
+        // Generate both dark and light palettes
+        const darkRng = mulberry32(darkSeed);
+        const lightRng = mulberry32(lightSeed);
+        const darkPalette = makePalette(darkRng, 'dark');
+        const lightPalette = makePalette(lightRng, 'light');
+        // Generate and write theme files
+        const darkThemeConfig = generateThemeConfig(darkPalette, 'VibeColors Dynamic Dark', true);
+        const lightThemeConfig = generateThemeConfig(lightPalette, 'VibeColors Dynamic Light', false);
+        const themesDir = path.join(extensionPath, 'themes');
+        if (!fs.existsSync(themesDir)) {
+            fs.mkdirSync(themesDir, { recursive: true });
+        }
+        // Write both theme files
+        fs.writeFileSync(path.join(themesDir, 'VibeColors-dynamic-dark-theme.json'), JSON.stringify(darkThemeConfig, null, '\t'));
+        fs.writeFileSync(path.join(themesDir, 'VibeColors-dynamic-light-theme.json'), JSON.stringify(lightThemeConfig, null, '\t'));
+        // Save the new seeds if persistence is enabled
+        const config = vscode.workspace.getConfiguration('vibeColors');
+        if (config.get('persistSeed', false)) {
+            await config.update('lastSeed', darkSeed, vscode.ConfigurationTarget.Global);
+        }
+        vscode.window.showInformationMessage(`Dynamic configuration regenerated! Dark seed: ${darkSeed.toString(16)}, Light seed: ${lightSeed.toString(16)}. Reload VS Code or switch themes to see changes.`);
+    }
+    catch (error) {
+        vscode.window.showErrorMessage(`Failed to regenerate dynamic configuration: ${error}`);
+    }
+}
 // --- Extension Entry --------------------------------------------------------
 async function activate(context) {
     console.log('VibeColors Dynamic Theme extension is now active');
@@ -494,8 +531,9 @@ async function activate(context) {
     const switchVariantCommand = vscode.commands.registerCommand('vibeColors.switchVariant', switchVariant);
     const saveCommand = vscode.commands.registerCommand('vibeColors.savePalette', saveCurrentPalette);
     const loadCommand = vscode.commands.registerCommand('vibeColors.loadPalette', loadSavedPalette);
+    const regenerateConfigCommand = vscode.commands.registerCommand('vibeColors.regenerateDynamicConfig', regenerateDynamicConfig);
     // Add to subscriptions
-    context.subscriptions.push(refreshCommand, refreshDarkCommand, refreshLightCommand, switchVariantCommand, saveCommand, loadCommand);
+    context.subscriptions.push(refreshCommand, refreshDarkCommand, refreshLightCommand, switchVariantCommand, saveCommand, loadCommand, regenerateConfigCommand);
 }
 exports.activate = activate;
 function deactivate() {

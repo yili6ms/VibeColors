@@ -61,6 +61,11 @@
         "command": "vibeColors.loadPalette",
         "title": "Load Saved Palette",
         "category": "VibeColors"
+      },
+      {
+        "command": "vibeColors.regenerateDynamicConfig",
+        "title": "Regenerate Dynamic Configuration",
+        "category": "VibeColors"
       }
     ],
     "configuration": {
