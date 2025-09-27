@@ -1,8 +1,8 @@
 {
   "name": "vibecolors",
   "displayName": "VibeColors",
-  "description": "Vibe color theme",
-  "version": "0.0.2",
+  "description": "Modern, colorful VS Code theme designed for programmers with comprehensive dark and light variants",
+  "version": "1.0.0",
   "publisher": "AlexLi",
   "icon": "vc.png",
   "engines": {
@@ -11,6 +11,17 @@
   "categories": [
     "Themes"
   ],
+  "keywords": [
+    "theme",
+    "dark",
+    "light",
+    "modern",
+    "colorful",
+    "programming",
+    "syntax-highlighting",
+    "vibe",
+    "developer"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/yili6ms/VibeColors.git"
@@ -18,9 +29,49 @@
   "contributes": {
     "themes": [
       {
-        "label": "Vibe color theme",
+        "label": "VibeColors Dark",
         "uiTheme": "vs-dark",
-        "path": "./themes/Vibe color theme-color-theme.json"
+        "path": "./themes/VibeColors-dark-theme.json"
+      },
+      {
+        "label": "VibeColors High Contrast Dark",
+        "uiTheme": "vs-dark",
+        "path": "./themes/VibeColors-high-contrast-dark-theme.json"
+      },
+      {
+        "label": "VibeColors Neon Dark",
+        "uiTheme": "vs-dark",
+        "path": "./themes/VibeColors-neon-dark-theme.json"
+      },
+      {
+        "label": "VibeColors Soft Dark",
+        "uiTheme": "vs-dark",
+        "path": "./themes/VibeColors-soft-dark-theme.json"
+      },
+      {
+        "label": "VibeColors Retro Dark",
+        "uiTheme": "vs-dark",
+        "path": "./themes/VibeColors-retro-dark-theme.json"
+      },
+      {
+        "label": "VibeColors Light",
+        "uiTheme": "vs",
+        "path": "./themes/VibeColors-light-theme.json"
+      },
+      {
+        "label": "VibeColors Minimal Light",
+        "uiTheme": "vs",
+        "path": "./themes/VibeColors-minimal-light-theme.json"
+      },
+      {
+        "label": "VibeColors Pastel Light",
+        "uiTheme": "vs",
+        "path": "./themes/VibeColors-pastel-light-theme.json"
+      },
+      {
+        "label": "VibeColors Corporate Light",
+        "uiTheme": "vs",
+        "path": "./themes/VibeColors-corporate-light-theme.json"
       }
     ]
   }
