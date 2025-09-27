@@ -1,7 +1,6 @@
 node_modules
 *.vsix
 .env
-package-lock.json
 dist/
 build/
 .DS_Store
