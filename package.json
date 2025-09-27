@@ -11,6 +11,10 @@
   "categories": [
     "Themes"
   ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
   "keywords": [
     "theme",
     "dark",
@@ -27,6 +31,63 @@
     "url": "https://github.com/yili6ms/VibeColors.git"
   },
   "contributes": {
+    "commands": [
+      {
+        "command": "vibeColors.refresh",
+        "title": "Refresh Dynamic Theme",
+        "category": "VibeColors"
+      },
+      {
+        "command": "vibeColors.refreshDark",
+        "title": "Generate New Dark Theme",
+        "category": "VibeColors"
+      },
+      {
+        "command": "vibeColors.refreshLight",
+        "title": "Generate New Light Theme",
+        "category": "VibeColors"
+      },
+      {
+        "command": "vibeColors.switchVariant",
+        "title": "Switch Dark/Light Variant",
+        "category": "VibeColors"
+      },
+      {
+        "command": "vibeColors.savePalette",
+        "title": "Save Current Palette",
+        "category": "VibeColors"
+      },
+      {
+        "command": "vibeColors.loadPalette",
+        "title": "Load Saved Palette",
+        "category": "VibeColors"
+      }
+    ],
+    "configuration": {
+      "title": "VibeColors",
+      "properties": {
+        "vibeColors.persistSeed": {
+          "type": "boolean",
+          "default": false,
+          "description": "Persist the last used seed between sessions"
+        },
+        "vibeColors.lastSeed": {
+          "type": "number",
+          "default": 0,
+          "description": "Last used seed for palette generation"
+        },
+        "vibeColors.savedPalettes": {
+          "type": "array",
+          "default": [],
+          "description": "Saved color palettes"
+        },
+        "vibeColors.autoRefreshInterval": {
+          "type": "number",
+          "default": 0,
+          "description": "Auto-refresh interval in minutes (0 = disabled)"
+        }
+      }
+    },
     "themes": [
       {
         "label": "VibeColors Dark",
@@ -72,7 +133,30 @@
         "label": "VibeColors Corporate Light",
         "uiTheme": "vs",
         "path": "./themes/VibeColors-corporate-light-theme.json"
+      },
+      {
+        "label": "VibeColors Dynamic Dark",
+        "uiTheme": "vs-dark",
+        "path": "./themes/VibeColors-dynamic-dark-theme.json"
+      },
+      {
+        "label": "VibeColors Dynamic Light",
+        "uiTheme": "vs",
+        "path": "./themes/VibeColors-dynamic-light-theme.json"
       }
     ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "echo 'No linting configured'",
+    "test": "echo 'No tests configured'"
+  },
+  "devDependencies": {
+    "@types/node": "^16.x",
+    "@types/vscode": "^1.104.0",
+    "typescript": "^4.9.4"
   }
 }
