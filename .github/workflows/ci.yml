@@ -17,7 +17,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '16'
-          cache: npm
+          cache: 'npm'
 
       - name: Install
         run: npm ci
@@ -34,7 +34,10 @@ jobs:
       - name: Build
         run: npm run compile
 
-      # Package VSIX
+      # Create dist directory and package VSIX
+      - name: Create dist directory
+        run: mkdir -p dist
+
       - name: Package
         run: npx @vscode/vsce package --out ./dist/extension.vsix
 
