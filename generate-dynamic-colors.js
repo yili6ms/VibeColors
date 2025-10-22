@@ -69,7 +69,9 @@ function generateRandomPalette(isDark = true) {
             error: hslToHex(0, 70 + Math.random() * 20, 55 + Math.random() * 15),
             warning: hslToHex(35 + Math.random() * 25, 75 + Math.random() * 15, 60 + Math.random() * 15),
             success: hslToHex(120 + Math.random() * 40, 60 + Math.random() * 25, 55 + Math.random() * 20),
-            info: hslToHex(200 + Math.random() * 40, 65 + Math.random() * 25, 60 + Math.random() * 20)
+            info: hslToHex(200 + Math.random() * 40, 65 + Math.random() * 25, 60 + Math.random() * 20),
+            rosemaryRed: hslToHex(355 + Math.random() * 10, 45 + Math.random() * 15, 65 + Math.random() * 15),
+            desertGold: hslToHex(45 + Math.random() * 15, 60 + Math.random() * 20, 70 + Math.random() * 15)
         };
     } else {
         return {
@@ -91,7 +93,9 @@ function generateRandomPalette(isDark = true) {
             error: hslToHex(0, 65 + Math.random() * 25, 45 + Math.random() * 20),
             warning: hslToHex(30 + Math.random() * 30, 70 + Math.random() * 20, 50 + Math.random() * 20),
             success: hslToHex(120 + Math.random() * 40, 55 + Math.random() * 30, 40 + Math.random() * 25),
-            info: hslToHex(200 + Math.random() * 40, 60 + Math.random() * 30, 45 + Math.random() * 25)
+            info: hslToHex(200 + Math.random() * 40, 60 + Math.random() * 30, 45 + Math.random() * 25),
+            rosemaryRed: hslToHex(355 + Math.random() * 10, 45 + Math.random() * 15, 50 + Math.random() * 15),
+            desertGold: hslToHex(45 + Math.random() * 15, 60 + Math.random() * 20, 55 + Math.random() * 15)
         };
     }
 }

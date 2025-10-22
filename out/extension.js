@@ -98,6 +98,8 @@ function generateHarmonizedPalette(rng, isDark) {
     const success = hslToHex(120 + rng() * 40, 60 + rng() * 25, isDark ? 60 + rng() * 20 : 40 + rng() * 25);
     const info = hslToHex(200 + rng() * 40, 65 + rng() * 25, isDark ? 65 + rng() * 20 : 45 + rng() * 25);
     const hint = hslToHex(180 + rng() * 40, 55 + rng() * 30, isDark ? 70 + rng() * 15 : 50 + rng() * 20);
+    const rosemaryRed = hslToHex(355 + rng() * 10, 45 + rng() * 15, isDark ? 65 + rng() * 15 : 50 + rng() * 15);
+    const desertGold = hslToHex(45 + rng() * 15, 60 + rng() * 20, isDark ? 70 + rng() * 15 : 55 + rng() * 15);
     // Generate special colors
     const selection = withOpacity(accent1, 0.3);
     const highlight = withOpacity(accent2, 0.2);
@@ -119,6 +121,8 @@ function generateHarmonizedPalette(rng, isDark) {
         success,
         info,
         hint,
+        rosemaryRed,
+        desertGold,
         selection,
         highlight,
         border
@@ -211,6 +215,8 @@ function generateThemeConfig(palette, themeName, isDark) {
             'terminal.ansiMagenta': palette.accent1,
             'terminal.ansiCyan': palette.accent2,
             'terminal.ansiWhite': palette.foreground,
+            'terminal.ansiBrightRed': palette.rosemaryRed,
+            'terminal.ansiBrightYellow': palette.desertGold,
             // Input controls
             'input.background': palette.backgroundTertiary,
             'input.border': palette.border,
@@ -383,6 +389,36 @@ function generateThemeConfig(palette, themeName, isDark) {
                 settings: {
                     background: palette.error,
                     foreground: palette.background
+                }
+            },
+            {
+                name: 'Deprecated',
+                scope: ['invalid.deprecated'],
+                settings: {
+                    foreground: palette.rosemaryRed,
+                    fontStyle: 'italic strikethrough'
+                }
+            },
+            {
+                name: 'Constants',
+                scope: ['constant.other', 'support.constant'],
+                settings: {
+                    foreground: palette.rosemaryRed
+                }
+            },
+            {
+                name: 'Documentation',
+                scope: ['comment.block.documentation', 'string.quoted.docstring'],
+                settings: {
+                    foreground: palette.desertGold,
+                    fontStyle: 'italic'
+                }
+            },
+            {
+                name: 'String Escape Characters',
+                scope: ['constant.character.escape'],
+                settings: {
+                    foreground: palette.desertGold
                 }
             }
         ]
