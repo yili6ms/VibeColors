@@ -1,0 +1,43 @@
+#!/bin/sh
+set -e
+
+if [ "${VIBECOLORS_SKIP_VERSION_BUMP:-}" = "1" ] || [ "${SKIP_VERSION_BUMP:-}" = "1" ]; then
+  exit 0
+fi
+
+if [ "${CI:-}" = "true" ] || [ "${CI:-}" = "1" ]; then
+  exit 0
+fi
+
+if ! command -v npm >/dev/null 2>&1; then
+  echo "pre-push: npm not found; skipping version bump." >&2
+  exit 0
+fi
+
+if ! command -v git >/dev/null 2>&1; then
+  echo "pre-push: git not found; skipping version bump." >&2
+  exit 0
+fi
+
+if git rev-parse --verify HEAD~1 >/dev/null 2>&1; then
+  CHANGED_FILES=$(git diff --name-only HEAD~1..HEAD)
+  if echo "$CHANGED_FILES" | grep -q -E '^(package.json|package-lock.json)$'; then
+    exit 0
+  fi
+fi
+
+if [ -n "$(git status --porcelain)" ]; then
+  echo "pre-push: working tree not clean; skipping version bump." >&2
+  exit 1
+fi
+
+npm version patch --no-git-tag-version >/dev/null
+
+VERSION=$(node -p "require('./package.json').version")
+
+git add package.json package-lock.json
+
+git commit -m "chore: bump version to ${VERSION}" >/dev/null
+
+echo "pre-push: version bumped to ${VERSION}. Re-run git push to include the new commit." >&2
+exit 1
