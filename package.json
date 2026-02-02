@@ -2,7 +2,7 @@
   "name": "vibecolors",
   "displayName": "VibeColors",
   "description": "Modern, colorful VS Code theme designed for programmers with comprehensive dark and light variants",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "publisher": "AlexLi",
   "icon": "vc.png",
   "engines": {
@@ -148,6 +148,26 @@
         "label": "VibeColors Dynamic Light",
         "uiTheme": "vs",
         "path": "./themes/VibeColors-dynamic-light-theme.json"
+      },
+      {
+        "label": "VibeColors Dynamic Vivid Dark",
+        "uiTheme": "vs-dark",
+        "path": "./themes/VibeColors-dynamic-vivid-dark-theme.json"
+      },
+      {
+        "label": "VibeColors Dynamic Vivid Light",
+        "uiTheme": "vs",
+        "path": "./themes/VibeColors-dynamic-vivid-light-theme.json"
+      },
+      {
+        "label": "VibeColors Dynamic Muted Dark",
+        "uiTheme": "vs-dark",
+        "path": "./themes/VibeColors-dynamic-muted-dark-theme.json"
+      },
+      {
+        "label": "VibeColors Dynamic Muted Light",
+        "uiTheme": "vs",
+        "path": "./themes/VibeColors-dynamic-muted-light-theme.json"
       }
     ]
   },
@@ -157,7 +177,7 @@
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
     "lint": "echo 'No linting configured'",
-    "test": "echo 'No tests configured'"
+    "test": "node ./out/tests/color-utils.test.js"
   },
   "devDependencies": {
     "@types/node": "^16.x",

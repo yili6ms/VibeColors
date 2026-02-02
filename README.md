@@ -34,6 +34,8 @@ A comprehensive VS Code theme collection featuring **11 unique themes** plus **i
 ### **Dynamic Themes**
 - **Dynamic Dark** - Algorithmically generated dark themes with infinite variety
 - **Dynamic Light** - Mathematically harmonious light themes, unique every time
+- **Dynamic Vivid Dark/Light** - Higher saturation accents and punchier contrast
+- **Dynamic Muted Dark/Light** - Softer saturation for a calmer look
 
 ## 🚀 Dynamic Theme System
 
@@ -43,6 +45,9 @@ Use Command Palette (`Ctrl+Shift+P`) for:
 - `VibeColors: Generate New Dark Theme` - Force new dark theme
 - `VibeColors: Generate New Light Theme` - Force new light theme
 - `VibeColors: Switch Dark/Light Variant` - Toggle with fresh colors
+
+### **Auto-Refresh**
+Set `vibeColors.autoRefreshInterval` (minutes) to periodically refresh the active dynamic theme.
 
 ### **Palette Management**
 - `VibeColors: Save Current Palette` - Save favorite color schemes

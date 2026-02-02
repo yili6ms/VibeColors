@@ -1,54 +1,21 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
+import { ColorPalette, PaletteStyle, adjustBrightness, makePalette, mulberry32, withOpacity } from './color-utils';
 
-// --- Types and Interfaces ---------------------------------------------------
+let autoRefreshTimer: NodeJS.Timeout | undefined;
 
-interface ColorPalette {
-    // Base colors
-    background: string;
-    backgroundSecondary: string;
-    backgroundTertiary: string;
-    foreground: string;
-    foregroundSecondary: string;
+const STYLE_LABELS: Record<PaletteStyle, string> = {
+    standard: 'Dynamic',
+    vivid: 'Dynamic Vivid',
+    muted: 'Dynamic Muted'
+};
 
-    // Accent colors
-    accent1: string;
-    accent2: string;
-    accent3: string;
-    accent4: string;
-
-    // Semantic colors
-    error: string;
-    warning: string;
-    success: string;
-    info: string;
-    hint: string;
-    rosemaryRed: string;
-    desertGold: string;
-
-    // Special colors
-    selection: string;
-    highlight: string;
-    border: string;
-}
-
-interface ThemeVariant {
-    name: string;
-    type: 'dark' | 'light';
-    palette: ColorPalette;
-}
-
-// --- Random Number Generator ------------------------------------------------
-
-function mulberry32(seed: number): () => number {
-    return function() {
-        let t = seed += 0x6D2B79F5;
-        t = Math.imul(t ^ t >>> 15, t | 1);
-        t ^= t + Math.imul(t ^ t >>> 7, t | 61);
-        return ((t ^ t >>> 14) >>> 0) / 4294967296;
-    };
-}
+const STYLE_FILE_SEGMENTS: Record<PaletteStyle, string> = {
+    standard: 'dynamic',
+    vivid: 'dynamic-vivid',
+    muted: 'dynamic-muted'
+};
 
 function getSeed(): number {
     const config = vscode.workspace.getConfiguration('vibeColors');
@@ -61,132 +28,26 @@ function getSeed(): number {
     return Math.floor(Math.random() * 0xffffffff);
 }
 
-// --- Color Utilities --------------------------------------------------------
-
-function hslToHex(h: number, s: number, l: number): string {
-    l /= 100;
-    const a = s * Math.min(l, 1 - l) / 100;
-    const f = (n: number) => {
-        const k = (n + h / 30) % 12;
-        const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
-        return Math.round(255 * color).toString(16).padStart(2, '0');
-    };
-    return `#${f(0)}${f(8)}${f(4)}`;
+function getThemeVariantFromName(themeName: string): 'dark' | 'light' {
+    return themeName.includes('Light') ? 'light' : 'dark';
 }
 
-function adjustBrightness(hex: string, factor: number): string {
-    const num = parseInt(hex.replace('#', ''), 16);
-    const amt = Math.round(2.55 * factor);
-    const R = (num >> 16) + amt;
-    const G = (num >> 8 & 0x00FF) + amt;
-    const B = (num & 0x0000FF) + amt;
-    return '#' + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
-        (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
-        (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
+function getThemeStyleFromName(themeName: string): PaletteStyle {
+    if (themeName.includes('Dynamic Vivid')) {
+        return 'vivid';
+    }
+    if (themeName.includes('Dynamic Muted')) {
+        return 'muted';
+    }
+    return 'standard';
 }
 
-function withOpacity(hex: string, opacity: number): string {
-    const alpha = Math.round(opacity * 255).toString(16).padStart(2, '0');
-    return hex + alpha;
+function getThemeName(variant: 'dark' | 'light', style: PaletteStyle): string {
+    return `VibeColors ${STYLE_LABELS[style]} ${variant === 'dark' ? 'Dark' : 'Light'}`;
 }
 
-// --- Advanced Palette Generation --------------------------------------------
-
-function generateHarmonizedPalette(rng: () => number, isDark: boolean): ColorPalette {
-    // Generate base hue with golden ratio for pleasing distributions
-    const baseHue = Math.floor(rng() * 360);
-    const goldenRatio = 137.508; // Golden angle in degrees
-
-    // Generate multiple harmonious hues
-    const hues = [
-        baseHue,
-        (baseHue + goldenRatio) % 360,
-        (baseHue + goldenRatio * 2) % 360,
-        (baseHue + 180) % 360, // Complementary
-    ];
-
-    // Color generation parameters based on theme type
-    const params = isDark ? {
-        bgSaturation: [15, 35],
-        bgLightness: [8, 18],
-        fgSaturation: [10, 30],
-        fgLightness: [80, 95],
-        accentSaturation: [60, 90],
-        accentLightness: [50, 80]
-    } : {
-        bgSaturation: [10, 30],
-        bgLightness: [92, 98],
-        fgSaturation: [20, 40],
-        fgLightness: [10, 25],
-        accentSaturation: [50, 80],
-        accentLightness: [35, 65]
-    };
-
-    // Generate background colors
-    const bgSat = params.bgSaturation[0] + rng() * (params.bgSaturation[1] - params.bgSaturation[0]);
-    const bgLight = params.bgLightness[0] + rng() * (params.bgLightness[1] - params.bgLightness[0]);
-
-    const background = hslToHex(hues[0], bgSat, bgLight);
-    const backgroundSecondary = hslToHex(hues[0], bgSat * 0.8, bgLight + (isDark ? -3 : 3));
-    const backgroundTertiary = hslToHex(hues[0], bgSat * 1.2, bgLight + (isDark ? 5 : -5));
-
-    // Generate foreground colors
-    const fgSat = params.fgSaturation[0] + rng() * (params.fgSaturation[1] - params.fgSaturation[0]);
-    const fgLight = params.fgLightness[0] + rng() * (params.fgLightness[1] - params.fgLightness[0]);
-
-    const foreground = hslToHex(hues[0], fgSat, fgLight);
-    const foregroundSecondary = hslToHex(hues[0], fgSat * 0.7, fgLight - (isDark ? 15 : -15));
-
-    // Generate accent colors with different hues
-    const accentSat = params.accentSaturation[0] + rng() * (params.accentSaturation[1] - params.accentSaturation[0]);
-    const accentLight = params.accentLightness[0] + rng() * (params.accentLightness[1] - params.accentLightness[0]);
-
-    const accent1 = hslToHex(hues[1], accentSat, accentLight);
-    const accent2 = hslToHex(hues[2], accentSat * 0.9, accentLight + 10);
-    const accent3 = hslToHex(hues[3], accentSat * 1.1, accentLight - 5);
-    const accent4 = hslToHex((hues[0] + 90) % 360, accentSat * 0.8, accentLight + 5);
-
-    // Generate semantic colors with consistent hue ranges
-    const error = hslToHex(0 + rng() * 20, 70 + rng() * 20, isDark ? 60 + rng() * 15 : 45 + rng() * 20);
-    const warning = hslToHex(35 + rng() * 25, 75 + rng() * 15, isDark ? 65 + rng() * 15 : 50 + rng() * 20);
-    const success = hslToHex(120 + rng() * 40, 60 + rng() * 25, isDark ? 60 + rng() * 20 : 40 + rng() * 25);
-    const info = hslToHex(200 + rng() * 40, 65 + rng() * 25, isDark ? 65 + rng() * 20 : 45 + rng() * 25);
-    const hint = hslToHex(180 + rng() * 40, 55 + rng() * 30, isDark ? 70 + rng() * 15 : 50 + rng() * 20);
-    const rosemaryRed = hslToHex(355 + rng() * 10, 45 + rng() * 15, isDark ? 65 + rng() * 15 : 50 + rng() * 15);
-    const desertGold = hslToHex(45 + rng() * 15, 60 + rng() * 20, isDark ? 70 + rng() * 15 : 55 + rng() * 15);
-
-    // Generate special colors
-    const selection = withOpacity(accent1, 0.3);
-    const highlight = withOpacity(accent2, 0.2);
-    const border = isDark ?
-        adjustBrightness(background, 15) :
-        adjustBrightness(background, -10);
-
-    return {
-        background,
-        backgroundSecondary,
-        backgroundTertiary,
-        foreground,
-        foregroundSecondary,
-        accent1,
-        accent2,
-        accent3,
-        accent4,
-        error,
-        warning,
-        success,
-        info,
-        hint,
-        rosemaryRed,
-        desertGold,
-        selection,
-        highlight,
-        border
-    };
-}
-
-function makePalette(rng: () => number, variant: 'dark' | 'light' = 'dark'): ColorPalette {
-    return generateHarmonizedPalette(rng, variant === 'dark');
+function getThemeFileName(variant: 'dark' | 'light', style: PaletteStyle): string {
+    return `VibeColors-${STYLE_FILE_SEGMENTS[style]}-${variant}-theme.json`;
 }
 
 // --- Theme Generation -------------------------------------------------------
@@ -508,16 +369,20 @@ function generateThemeConfig(palette: ColorPalette, themeName: string, isDark: b
 
 // --- Theme Application ------------------------------------------------------
 
-async function applyTheme(palette: ColorPalette, variant: 'dark' | 'light' = 'dark'): Promise<void> {
+async function applyTheme(
+    palette: ColorPalette,
+    variant: 'dark' | 'light' = 'dark',
+    style: PaletteStyle = 'standard'
+): Promise<void> {
     const extensionPath = vscode.extensions.getExtension('AlexLi.vibecolors')?.extensionPath;
     if (!extensionPath) {
         vscode.window.showErrorMessage('VibeColors extension not found');
         return;
     }
 
-    const themeName = `VibeColors Dynamic ${variant === 'dark' ? 'Dark' : 'Light'}`;
+    const themeName = getThemeName(variant, style);
     const themeConfig = generateThemeConfig(palette, themeName, variant === 'dark');
-    const themeFileName = `VibeColors-dynamic-${variant}-theme.json`;
+    const themeFileName = getThemeFileName(variant, style);
     const themePath = path.join(extensionPath, 'themes', themeFileName);
 
     try {
@@ -542,10 +407,14 @@ async function applyTheme(palette: ColorPalette, variant: 'dark' | 'light' = 'da
 
 // --- Commands ---------------------------------------------------------------
 
-async function refreshTheme(variant?: 'dark' | 'light'): Promise<void> {
+async function refreshTheme(
+    variant?: 'dark' | 'light',
+    options: { style?: PaletteStyle; silent?: boolean } = {}
+): Promise<void> {
     const config = vscode.workspace.getConfiguration('vibeColors');
     const newSeed = Math.floor(Math.random() * 0xffffffff);
     const rng = mulberry32(newSeed);
+    const currentTheme = vscode.workspace.getConfiguration().get<string>('workbench.colorTheme', '');
 
     // Save the seed if persistence is enabled
     if (config.get<boolean>('persistSeed', false)) {
@@ -554,23 +423,27 @@ async function refreshTheme(variant?: 'dark' | 'light'): Promise<void> {
 
     // Determine which variant to apply
     if (!variant) {
-        const currentTheme = vscode.workspace.getConfiguration().get<string>('workbench.colorTheme', '');
-        variant = currentTheme.includes('Light') ? 'light' : 'dark';
+        variant = getThemeVariantFromName(currentTheme);
     }
+    const style = options.style ?? getThemeStyleFromName(currentTheme);
 
-    const palette = makePalette(rng, variant);
-    await applyTheme(palette, variant);
+    const palette = makePalette(rng, variant, style);
+    await applyTheme(palette, variant, style);
 
-    vscode.window.showInformationMessage(
-        `Dynamic Theme: ${variant} palette refreshed with seed ${newSeed.toString(16)}.`
-    );
+    if (!options.silent) {
+        vscode.window.showInformationMessage(
+            `Dynamic Theme: ${variant} palette refreshed with seed ${newSeed.toString(16)}.`
+        );
+    }
 }
 
 async function switchVariant(): Promise<void> {
     const currentTheme = vscode.workspace.getConfiguration().get<string>('workbench.colorTheme', '');
-    const newVariant = currentTheme.includes('Light') ? 'dark' : 'light';
+    const currentVariant = getThemeVariantFromName(currentTheme);
+    const newVariant = currentVariant === 'light' ? 'dark' : 'light';
+    const style = getThemeStyleFromName(currentTheme);
 
-    await refreshTheme(newVariant);
+    await refreshTheme(newVariant, { style });
 }
 
 async function saveCurrentPalette(): Promise<void> {
@@ -615,10 +488,11 @@ async function loadSavedPalette(): Promise<void> {
     if (selected) {
         const rng = mulberry32(selected.seed);
         const currentTheme = vscode.workspace.getConfiguration().get<string>('workbench.colorTheme', '');
-        const variant = currentTheme.includes('Light') ? 'light' : 'dark';
-        const palette = makePalette(rng, variant);
+        const variant = getThemeVariantFromName(currentTheme);
+        const style = getThemeStyleFromName(currentTheme);
+        const palette = makePalette(rng, variant, style);
 
-        await applyTheme(palette, variant);
+        await applyTheme(palette, variant, style);
         await config.update('lastSeed', selected.seed, vscode.ConfigurationTarget.Global);
 
         vscode.window.showInformationMessage(`Loaded palette: ${selected.label}`);
@@ -635,48 +509,75 @@ async function regenerateDynamicConfig(): Promise<void> {
     try {
         vscode.window.showInformationMessage('Regenerating dynamic configuration...');
 
-        // Generate new random seeds for both dark and light themes
-        const darkSeed = Math.floor(Math.random() * 0xffffffff);
-        const lightSeed = Math.floor(Math.random() * 0xffffffff);
-
-        // Generate both dark and light palettes
-        const darkRng = mulberry32(darkSeed);
-        const lightRng = mulberry32(lightSeed);
-        const darkPalette = makePalette(darkRng, 'dark');
-        const lightPalette = makePalette(lightRng, 'light');
-
-        // Generate and write theme files
-        const darkThemeConfig = generateThemeConfig(darkPalette, 'VibeColors Dynamic Dark', true);
-        const lightThemeConfig = generateThemeConfig(lightPalette, 'VibeColors Dynamic Light', false);
-
         const themesDir = path.join(extensionPath, 'themes');
         if (!fs.existsSync(themesDir)) {
             fs.mkdirSync(themesDir, { recursive: true });
         }
 
-        // Write both theme files
-        fs.writeFileSync(
-            path.join(themesDir, 'VibeColors-dynamic-dark-theme.json'),
-            JSON.stringify(darkThemeConfig, null, '\t')
-        );
-        fs.writeFileSync(
-            path.join(themesDir, 'VibeColors-dynamic-light-theme.json'),
-            JSON.stringify(lightThemeConfig, null, '\t')
-        );
-
-        // Save the new seeds if persistence is enabled
         const config = vscode.workspace.getConfiguration('vibeColors');
-        if (config.get<boolean>('persistSeed', false)) {
-            await config.update('lastSeed', darkSeed, vscode.ConfigurationTarget.Global);
+        const styles: PaletteStyle[] = ['standard', 'vivid', 'muted'];
+        const variants: Array<'dark' | 'light'> = ['dark', 'light'];
+        const currentTheme = vscode.workspace.getConfiguration().get<string>('workbench.colorTheme', '');
+        const activeVariant = getThemeVariantFromName(currentTheme);
+        const activeStyle = getThemeStyleFromName(currentTheme);
+        let seedToPersist: number | undefined;
+
+        for (const style of styles) {
+            for (const variant of variants) {
+                const seed = Math.floor(Math.random() * 0xffffffff);
+                const rng = mulberry32(seed);
+                const palette = makePalette(rng, variant, style);
+                const themeName = getThemeName(variant, style);
+                const themeConfig = generateThemeConfig(palette, themeName, variant === 'dark');
+                const themeFileName = getThemeFileName(variant, style);
+
+                fs.writeFileSync(
+                    path.join(themesDir, themeFileName),
+                    JSON.stringify(themeConfig, null, '\t')
+                );
+
+                if (variant === activeVariant && style === activeStyle) {
+                    seedToPersist = seed;
+                }
+            }
+        }
+
+        if (config.get<boolean>('persistSeed', false) && seedToPersist !== undefined) {
+            await config.update('lastSeed', seedToPersist, vscode.ConfigurationTarget.Global);
         }
 
         vscode.window.showInformationMessage(
-            `Dynamic configuration regenerated! Dark seed: ${darkSeed.toString(16)}, Light seed: ${lightSeed.toString(16)}. Reload VS Code or switch themes to see changes.`
+            'Dynamic configuration regenerated! Reload VS Code or switch themes to see changes.'
         );
 
     } catch (error) {
         vscode.window.showErrorMessage(`Failed to regenerate dynamic configuration: ${error}`);
     }
+}
+
+function clearAutoRefreshTimer(): void {
+    if (autoRefreshTimer) {
+        clearInterval(autoRefreshTimer);
+        autoRefreshTimer = undefined;
+    }
+}
+
+function scheduleAutoRefresh(): void {
+    clearAutoRefreshTimer();
+    const config = vscode.workspace.getConfiguration('vibeColors');
+    const intervalMinutes = config.get<number>('autoRefreshInterval', 0);
+    if (!intervalMinutes || intervalMinutes <= 0) {
+        return;
+    }
+
+    const intervalMs = intervalMinutes * 60 * 1000;
+    autoRefreshTimer = setInterval(() => {
+        const currentTheme = vscode.workspace.getConfiguration().get<string>('workbench.colorTheme', '');
+        if (!currentTheme.includes('VibeColors Dynamic')) {
+            return;
+        }
+        refreshTheme(undefined, { silent: true });
+    }, intervalMs);
 }
 
 // --- Extension Entry --------------------------------------------------------
@@ -686,8 +587,11 @@ export async function activate(context: vscode.ExtensionContext) {
 
     // Initialize with random theme
     const rng = mulberry32(getSeed());
-    const palette = makePalette(rng);
-    await applyTheme(palette);
+    const currentTheme = vscode.workspace.getConfiguration().get<string>('workbench.colorTheme', '');
+    const variant = getThemeVariantFromName(currentTheme);
+    const style = getThemeStyleFromName(currentTheme);
+    const palette = makePalette(rng, variant, style);
+    await applyTheme(palette, variant, style);
 
     // Register commands
     const refreshCommand = vscode.commands.registerCommand('vibeColors.refresh', () => refreshTheme());
@@ -706,10 +610,19 @@ export async function activate(context: vscode.ExtensionContext) {
         switchVariantCommand,
         saveCommand,
         loadCommand,
-        regenerateConfigCommand
+        regenerateConfigCommand,
+        vscode.workspace.onDidChangeConfiguration(event => {
+            if (event.affectsConfiguration('vibeColors.autoRefreshInterval')) {
+                scheduleAutoRefresh();
+            }
+        }),
+        { dispose: clearAutoRefreshTimer }
     );
+
+    scheduleAutoRefresh();
 }
 
 export function deactivate() {
+    clearAutoRefreshTimer();
     console.log('VibeColors Dynamic Theme extension is now deactivated');
 }
