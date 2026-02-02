@@ -1,10 +1,12 @@
 # VibeColors
+[![VS Code Extension CI](https://github.com/yili6ms/VibeColors/actions/workflows/ci.yml/badge.svg)](https://github.com/yili6ms/VibeColors/actions/workflows/ci.yml)
+[Latest VSIX](https://github.com/yili6ms/VibeColors/releases/latest/download/vibecolors-latest.vsix)
 
-A comprehensive VS Code theme collection featuring **11 unique themes** plus **infinite dynamic color generation**. From carefully crafted static themes to algorithmically generated palettes, VibeColors offers the ultimate customization for your coding environment.
+A comprehensive VS Code theme collection featuring **15 unique themes** plus **infinite dynamic color generation**. From carefully crafted static themes to algorithmically generated palettes, VibeColors offers the ultimate customization for your coding environment.
 
 ## 🌟 Features
 
-🎨 **11 Distinct Theme Variants** - Carefully designed themes for every mood and environment
+🎨 **15 Distinct Theme Variants** - Carefully designed themes for every mood and environment
 
 🎲 **Dynamic Theme Generation** - Infinite random color schemes with mathematical harmony
 
@@ -68,15 +70,16 @@ Set `vibeColors.autoRefreshInterval` (minutes) to periodically refresh the activ
 4. Select your preferred theme from **File > Preferences > Color Theme**
 
 ### **Manual Installation**
+1. Download the latest VSIX: [vibecolors-latest.vsix](https://github.com/yili6ms/VibeColors/releases/latest/download/vibecolors-latest.vsix)
+2. Install with:
 ```bash
-# Download and install .vsix file
-code --install-extension vibecolors-1.0.1.vsix
+code --install-extension vibecolors-latest.vsix
 ```
 
 ### **First Use**
 - Extension auto-activates with a random dynamic theme
 - Use Command Palette (`Ctrl+Shift+P`) → "VibeColors" to explore features
-- Switch between 11 static themes or generate infinite dynamic ones
+- Switch between 15 built-in themes or generate infinite dynamic ones
 
 ## 🎯 What's Enhanced
 
@@ -184,7 +187,7 @@ vsce package
 
 ## 🌟 What Makes VibeColors Special
 
-- **11 Handcrafted Themes** - Each with distinct personality and use case
+- **15 Built-in Themes** - Each with distinct personality and use case
 - **Infinite Dynamic Generation** - Mathematical color harmony algorithms
 - **Real-time Application** - Instant theme switching with no restart required
 - **Palette Management** - Save, organize, and share favorite combinations
