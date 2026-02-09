@@ -2,7 +2,7 @@
   "name": "vibecolors",
   "displayName": "VibeColors",
   "description": "Modern, colorful VS Code theme designed for programmers with comprehensive dark and light variants",
-  "version": "1.1.1",
+  "version": "1.1.3",
   "publisher": "AlexLi",
   "icon": "vc.png",
   "engines": {
@@ -120,6 +120,11 @@
         "path": "./themes/VibeColors-retro-dark-theme.json"
       },
       {
+        "label": "VibeColors Ocean Dark",
+        "uiTheme": "vs-dark",
+        "path": "./themes/VibeColors-ocean-dark-theme.json"
+      },
+      {
         "label": "VibeColors Light",
         "uiTheme": "vs",
         "path": "./themes/VibeColors-light-theme.json"
@@ -138,6 +143,11 @@
         "label": "VibeColors Corporate Light",
         "uiTheme": "vs",
         "path": "./themes/VibeColors-corporate-light-theme.json"
+      },
+      {
+        "label": "VibeColors Sunset Light",
+        "uiTheme": "vs",
+        "path": "./themes/VibeColors-sunset-light-theme.json"
       },
       {
         "label": "VibeColors Dynamic Dark",
@@ -172,7 +182,8 @@
     ]
   },
   "scripts": {
-    "vscode:prepublish": "npm run compile",
+    "vscode:prepublish": "npm run version:bump && npm run compile",
+    "version:bump": "node ./scripts/bump-version.js",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
@@ -183,6 +194,10 @@
   "devDependencies": {
     "@types/node": "^16.x",
     "@types/vscode": "^1.104.0",
-    "typescript": "^4.9.4"
+    "typescript": "^4.9.4",
+    "vitest": "^0.34.6"
+  },
+  "dependencies": {
+    "vsce": "^2.15.0"
   }
 }

@@ -2,11 +2,11 @@
 [![VS Code Extension CI](https://github.com/yili6ms/VibeColors/actions/workflows/ci.yml/badge.svg)](https://github.com/yili6ms/VibeColors/actions/workflows/ci.yml)
 [Latest VSIX](https://github.com/yili6ms/VibeColors/releases/latest/download/vibecolors-latest.vsix)
 
-A comprehensive VS Code theme collection featuring **15 unique themes** plus **infinite dynamic color generation**. From carefully crafted static themes to algorithmically generated palettes, VibeColors offers the ultimate customization for your coding environment.
+A comprehensive VS Code theme collection featuring **17 unique themes** plus **infinite dynamic color generation**. From carefully crafted static themes to algorithmically generated palettes, VibeColors offers the ultimate customization for your coding environment.
 
 ## 🌟 Features
 
-🎨 **15 Distinct Theme Variants** - Carefully designed themes for every mood and environment
+🎨 **17 Distinct Theme Variants** - Carefully designed themes for every mood and environment
 
 🎲 **Dynamic Theme Generation** - Infinite random color schemes with mathematical harmony
 
@@ -26,12 +26,14 @@ A comprehensive VS Code theme collection featuring **15 unique themes** plus **i
 - **Neon Dark** - Vibrant cyberpunk aesthetics with hot pink and electric blue
 - **Soft Dark** - Muted, warm colors with gentle contrasts for comfortable sessions
 - **Retro Dark** - Vintage computing vibes with classic green/amber CRT colors
+- **Ocean Dark** - Deep blues with aqua highlights inspired by calm coastal palettes
 
 ### **Light Themes**
 - **VibeColors Light** - Clean, professional light theme with excellent readability
 - **Minimal Light** - Ultra-clean design with subtle grays and minimal color
 - **Pastel Light** - Soft purple/pink backgrounds with gentle, artistic pastels
 - **Corporate Light** - Business-appropriate blues and grays for professional environments
+- **Sunset Light** - Warm peach and coral hues reminiscent of late-evening light
 
 ### **Dynamic Themes**
 - **Dynamic Dark** - Algorithmically generated dark themes with infinite variety
@@ -79,7 +81,7 @@ code --install-extension vibecolors-latest.vsix
 ### **First Use**
 - Extension auto-activates with a random dynamic theme
 - Use Command Palette (`Ctrl+Shift+P`) → "VibeColors" to explore features
-- Switch between 15 built-in themes or generate infinite dynamic ones
+- Switch between 17 built-in themes or generate infinite dynamic ones
 
 ## 🎯 What's Enhanced
 
@@ -187,7 +189,7 @@ vsce package
 
 ## 🌟 What Makes VibeColors Special
 
-- **15 Built-in Themes** - Each with distinct personality and use case
+- **17 Built-in Themes** - Each with distinct personality and use case
 - **Infinite Dynamic Generation** - Mathematical color harmony algorithms
 - **Real-time Application** - Instant theme switching with no restart required
 - **Palette Management** - Save, organize, and share favorite combinations
