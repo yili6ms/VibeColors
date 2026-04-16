@@ -5,40 +5,16 @@ const vscode = require("vscode");
 const fs = require("fs");
 const path = require("path");
 const color_utils_1 = require("./color-utils");
+const theme_naming_1 = require("./theme-naming");
 let autoRefreshTimer;
 let extensionContext;
 let suppressThemeChangeHandling = 0;
+let lastGeneratedSeed;
+let lastGeneratedVariant;
+let lastGeneratedStyle;
 const LAST_APPLIED_THEME_KEY = 'vibeColors.lastAppliedTheme';
-const STYLE_LABELS = {
-    standard: 'Dynamic',
-    vivid: 'Dynamic Vivid',
-    muted: 'Dynamic Muted'
-};
-const STYLE_FILE_SEGMENTS = {
-    standard: 'dynamic',
-    vivid: 'dynamic-vivid',
-    muted: 'dynamic-muted'
-};
-function getThemeVariantFromName(themeName) {
-    return themeName.includes('Light') ? 'light' : 'dark';
-}
-function getThemeStyleFromName(themeName) {
-    if (themeName.includes('Dynamic Vivid')) {
-        return 'vivid';
-    }
-    if (themeName.includes('Dynamic Muted')) {
-        return 'muted';
-    }
-    return 'standard';
-}
-function getThemeName(variant, style) {
-    return `VibeColors ${STYLE_LABELS[style]} ${variant === 'dark' ? 'Dark' : 'Light'}`;
-}
-function getThemeFileName(variant, style) {
-    return `VibeColors-${STYLE_FILE_SEGMENTS[style]}-${variant}-theme.json`;
-}
-function isDynamicTheme(themeName) {
-    return themeName.includes('VibeColors Dynamic');
+function getExtensionPath() {
+    return extensionContext?.extensionPath;
 }
 function getLastAppliedTheme() {
     return extensionContext?.globalState.get(LAST_APPLIED_THEME_KEY);
@@ -57,7 +33,7 @@ async function ensureDynamicThemeUpToDate(options = {}) {
     if (!currentTheme) {
         return;
     }
-    if (!isDynamicTheme(currentTheme)) {
+    if (!(0, theme_naming_1.isDynamicTheme)(currentTheme)) {
         if (getLastAppliedTheme()) {
             await clearRememberedTheme();
         }
@@ -363,14 +339,14 @@ function generateThemeConfig(palette, themeName, isDark) {
 }
 // --- Theme Application ------------------------------------------------------
 async function applyTheme(palette, variant = 'dark', style = 'standard') {
-    const extensionPath = vscode.extensions.getExtension('AlexLi.vibecolors')?.extensionPath;
+    const extensionPath = getExtensionPath();
     if (!extensionPath) {
-        vscode.window.showErrorMessage('VibeColors extension not found');
+        vscode.window.showErrorMessage('VibeColors extension path is not available');
         return;
     }
-    const themeName = getThemeName(variant, style);
+    const themeName = (0, theme_naming_1.getThemeName)(variant, style);
     const themeConfig = generateThemeConfig(palette, themeName, variant === 'dark');
-    const themeFileName = getThemeFileName(variant, style);
+    const themeFileName = (0, theme_naming_1.getThemeFileName)(variant, style);
     const themePath = path.join(extensionPath, 'themes', themeFileName);
     try {
         // Ensure themes directory exists
@@ -406,10 +382,13 @@ async function refreshTheme(variant, options = {}) {
     }
     // Determine which variant to apply
     if (!variant) {
-        variant = getThemeVariantFromName(currentTheme);
+        variant = (0, theme_naming_1.getThemeVariantFromName)(currentTheme);
     }
-    const style = options.style ?? getThemeStyleFromName(currentTheme);
+    const style = options.style ?? (0, theme_naming_1.getThemeStyleFromName)(currentTheme);
     const palette = (0, color_utils_1.makePalette)(rng, variant, style);
+    lastGeneratedSeed = newSeed;
+    lastGeneratedVariant = variant;
+    lastGeneratedStyle = style;
     await applyTheme(palette, variant, style);
     if (!options.silent) {
         vscode.window.showInformationMessage(`Dynamic Theme: ${variant} palette refreshed with seed ${newSeed.toString(16)}.`);
@@ -417,26 +396,28 @@ async function refreshTheme(variant, options = {}) {
 }
 async function switchVariant() {
     const currentTheme = vscode.workspace.getConfiguration().get('workbench.colorTheme', '');
-    const currentVariant = getThemeVariantFromName(currentTheme);
+    const currentVariant = (0, theme_naming_1.getThemeVariantFromName)(currentTheme);
     const newVariant = currentVariant === 'light' ? 'dark' : 'light';
-    const style = getThemeStyleFromName(currentTheme);
+    const style = (0, theme_naming_1.getThemeStyleFromName)(currentTheme);
     await refreshTheme(newVariant, { style });
 }
 async function saveCurrentPalette() {
     const config = vscode.workspace.getConfiguration('vibeColors');
-    const lastSeed = config.get('lastSeed');
-    if (lastSeed) {
-        const savedPalettes = config.get('savedPalettes', []);
-        const timestamp = new Date().toISOString();
-        const paletteName = `Palette ${timestamp.slice(0, 10)} ${timestamp.slice(11, 19)}`;
-        savedPalettes.push({
-            name: paletteName,
-            seed: lastSeed,
-            timestamp
-        });
-        await config.update('savedPalettes', savedPalettes, vscode.ConfigurationTarget.Global);
-        vscode.window.showInformationMessage(`Saved palette: ${paletteName}`);
+    const persistedSeed = config.get('lastSeed');
+    const seed = lastGeneratedSeed ?? (persistedSeed && persistedSeed !== 0 ? persistedSeed : undefined);
+    if (seed === undefined) {
+        vscode.window.showInformationMessage('No dynamic palette has been generated yet. Run "VibeColors: Refresh Dynamic Theme" first.');
+        return;
     }
+    const currentTheme = vscode.workspace.getConfiguration().get('workbench.colorTheme', '');
+    const variant = lastGeneratedVariant ?? (0, theme_naming_1.getThemeVariantFromName)(currentTheme);
+    const style = lastGeneratedStyle ?? (0, theme_naming_1.getThemeStyleFromName)(currentTheme);
+    const savedPalettes = config.get('savedPalettes', []);
+    const timestamp = new Date().toISOString();
+    const paletteName = `Palette ${timestamp.slice(0, 10)} ${timestamp.slice(11, 19)}`;
+    savedPalettes.push({ name: paletteName, seed, timestamp, variant, style });
+    await config.update('savedPalettes', savedPalettes, vscode.ConfigurationTarget.Global);
+    vscode.window.showInformationMessage(`Saved palette: ${paletteName}`);
 }
 async function loadSavedPalette() {
     const config = vscode.workspace.getConfiguration('vibeColors');
@@ -448,26 +429,32 @@ async function loadSavedPalette() {
     const items = savedPalettes.map(p => ({
         label: p.name,
         description: `Seed: ${p.seed.toString(16)}`,
-        seed: p.seed
+        palette: p
     }));
     const selected = await vscode.window.showQuickPick(items, {
         placeHolder: 'Select a saved palette'
     });
-    if (selected) {
-        const rng = (0, color_utils_1.mulberry32)(selected.seed);
-        const currentTheme = vscode.workspace.getConfiguration().get('workbench.colorTheme', '');
-        const variant = getThemeVariantFromName(currentTheme);
-        const style = getThemeStyleFromName(currentTheme);
-        const palette = (0, color_utils_1.makePalette)(rng, variant, style);
-        await applyTheme(palette, variant, style);
-        await config.update('lastSeed', selected.seed, vscode.ConfigurationTarget.Global);
-        vscode.window.showInformationMessage(`Loaded palette: ${selected.label}`);
+    if (!selected) {
+        return;
     }
+    const currentTheme = vscode.workspace.getConfiguration().get('workbench.colorTheme', '');
+    const variant = selected.palette.variant ?? (0, theme_naming_1.getThemeVariantFromName)(currentTheme);
+    const style = selected.palette.style ?? (0, theme_naming_1.getThemeStyleFromName)(currentTheme);
+    const rng = (0, color_utils_1.mulberry32)(selected.palette.seed);
+    const palette = (0, color_utils_1.makePalette)(rng, variant, style);
+    lastGeneratedSeed = selected.palette.seed;
+    lastGeneratedVariant = variant;
+    lastGeneratedStyle = style;
+    await applyTheme(palette, variant, style);
+    if (config.get('persistSeed', false)) {
+        await config.update('lastSeed', selected.palette.seed, vscode.ConfigurationTarget.Global);
+    }
+    vscode.window.showInformationMessage(`Loaded palette: ${selected.label}`);
 }
 async function regenerateDynamicConfig() {
-    const extensionPath = vscode.extensions.getExtension('AlexLi.vibecolors')?.extensionPath;
+    const extensionPath = getExtensionPath();
     if (!extensionPath) {
-        vscode.window.showErrorMessage('VibeColors extension not found');
+        vscode.window.showErrorMessage('VibeColors extension path is not available');
         return;
     }
     try {
@@ -477,23 +464,26 @@ async function regenerateDynamicConfig() {
             fs.mkdirSync(themesDir, { recursive: true });
         }
         const config = vscode.workspace.getConfiguration('vibeColors');
-        const styles = ['standard', 'vivid', 'muted'];
+        const styles = ['standard', 'vivid', 'muted', 'auto'];
         const variants = ['dark', 'light'];
         const currentTheme = vscode.workspace.getConfiguration().get('workbench.colorTheme', '');
-        const activeVariant = getThemeVariantFromName(currentTheme);
-        const activeStyle = getThemeStyleFromName(currentTheme);
+        const activeVariant = (0, theme_naming_1.getThemeVariantFromName)(currentTheme);
+        const activeStyle = (0, theme_naming_1.getThemeStyleFromName)(currentTheme);
         let seedToPersist;
         for (const style of styles) {
             for (const variant of variants) {
                 const seed = Math.floor(Math.random() * 0xffffffff);
                 const rng = (0, color_utils_1.mulberry32)(seed);
                 const palette = (0, color_utils_1.makePalette)(rng, variant, style);
-                const themeName = getThemeName(variant, style);
+                const themeName = (0, theme_naming_1.getThemeName)(variant, style);
                 const themeConfig = generateThemeConfig(palette, themeName, variant === 'dark');
-                const themeFileName = getThemeFileName(variant, style);
+                const themeFileName = (0, theme_naming_1.getThemeFileName)(variant, style);
                 fs.writeFileSync(path.join(themesDir, themeFileName), JSON.stringify(themeConfig, null, '\t'));
                 if (variant === activeVariant && style === activeStyle) {
                     seedToPersist = seed;
+                    lastGeneratedSeed = seed;
+                    lastGeneratedVariant = variant;
+                    lastGeneratedStyle = style;
                 }
             }
         }
@@ -515,14 +505,19 @@ function clearAutoRefreshTimer() {
 function scheduleAutoRefresh() {
     clearAutoRefreshTimer();
     const config = vscode.workspace.getConfiguration('vibeColors');
-    const intervalMinutes = config.get('autoRefreshInterval', 0);
+    const currentTheme = vscode.workspace.getConfiguration().get('workbench.colorTheme', '');
+    // Auto themes rotate on their own schedule; Dynamic themes rotate only
+    // when the user opts in via vibeColors.autoRefreshInterval.
+    const intervalMinutes = (0, theme_naming_1.isAutoTheme)(currentTheme)
+        ? config.get('autoThemePeriodMinutes', 10)
+        : config.get('autoRefreshInterval', 0);
     if (!intervalMinutes || intervalMinutes <= 0) {
         return;
     }
     const intervalMs = intervalMinutes * 60 * 1000;
     autoRefreshTimer = setInterval(() => {
-        const currentTheme = vscode.workspace.getConfiguration().get('workbench.colorTheme', '');
-        if (!currentTheme || !isDynamicTheme(currentTheme)) {
+        const activeTheme = vscode.workspace.getConfiguration().get('workbench.colorTheme', '');
+        if (!activeTheme || !(0, theme_naming_1.isDynamicTheme)(activeTheme)) {
             return;
         }
         refreshTheme(undefined, { silent: true });
@@ -543,7 +538,8 @@ async function activate(context) {
     const regenerateConfigCommand = vscode.commands.registerCommand('vibeColors.regenerateDynamicConfig', regenerateDynamicConfig);
     // Add to subscriptions
     context.subscriptions.push(refreshCommand, refreshDarkCommand, refreshLightCommand, switchVariantCommand, saveCommand, loadCommand, regenerateConfigCommand, vscode.workspace.onDidChangeConfiguration(async (event) => {
-        if (event.affectsConfiguration('vibeColors.autoRefreshInterval')) {
+        if (event.affectsConfiguration('vibeColors.autoRefreshInterval') ||
+            event.affectsConfiguration('vibeColors.autoThemePeriodMinutes')) {
             scheduleAutoRefresh();
         }
         if (event.affectsConfiguration('workbench.colorTheme')) {
@@ -551,6 +547,9 @@ async function activate(context) {
                 return;
             }
             await ensureDynamicThemeUpToDate({ silent: true });
+            // The interval source depends on whether the active theme is
+            // an Auto theme, so re-evaluate when the theme changes.
+            scheduleAutoRefresh();
         }
     }), { dispose: clearAutoRefreshTimer });
     scheduleAutoRefresh();

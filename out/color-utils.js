@@ -23,8 +23,13 @@ function hslToHex(h, s, l) {
     return `#${f(0)}${f(8)}${f(4)}`;
 }
 exports.hslToHex = hslToHex;
+function stripAlpha(hex) {
+    const trimmed = hex.trim();
+    const body = trimmed.startsWith('#') ? trimmed.slice(1) : trimmed;
+    return body.length === 8 ? body.slice(0, 6) : body;
+}
 function adjustBrightness(hex, factor) {
-    const num = parseInt(hex.replace('#', ''), 16);
+    const num = parseInt(stripAlpha(hex), 16);
     const amt = Math.round(2.55 * factor);
     const R = (num >> 16) + amt;
     const G = (num >> 8 & 0x00FF) + amt;
@@ -36,7 +41,7 @@ function adjustBrightness(hex, factor) {
 exports.adjustBrightness = adjustBrightness;
 function withOpacity(hex, opacity) {
     const alpha = Math.round(opacity * 255).toString(16).padStart(2, '0');
-    return hex + alpha;
+    return `#${stripAlpha(hex)}${alpha}`;
 }
 exports.withOpacity = withOpacity;
 function clamp(value, min, max) {
@@ -49,7 +54,7 @@ function shiftRange(range, delta, min = 0, max = 100) {
     ];
 }
 function applyStyle(params, style, isDark) {
-    if (style === 'standard') {
+    if (style === 'standard' || style === 'auto') {
         return params;
     }
     const saturationDelta = style === 'vivid' ? 12 : -12;

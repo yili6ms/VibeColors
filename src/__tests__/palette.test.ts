@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { makePalette, mulberry32, withOpacity, ColorPalette } from '../palette';
+import { ColorPalette, makePalette, mulberry32, withOpacity } from '../color-utils';
 
 function expectHexColor(value: string, length: number) {
     expect(value).toMatch(new RegExp(`^#[0-9a-f]{${length}}$`, 'i'));
@@ -7,13 +7,15 @@ function expectHexColor(value: string, length: number) {
 
 describe('withOpacity', () => {
     it('adds alpha information to 6 digit hex values', () => {
-        const result = withOpacity('#112233', 0.5);
-        expect(result).toBe('#11223380');
+        expect(withOpacity('#112233', 0.5)).toBe('#11223380');
     });
 
     it('replaces existing alpha channel instead of appending', () => {
-        const result = withOpacity('#445566cc', 0.25);
-        expect(result).toBe('#44556640');
+        expect(withOpacity('#445566cc', 0.25)).toBe('#44556640');
+    });
+
+    it('tolerates input without a leading #', () => {
+        expect(withOpacity('112233', 1)).toBe('#112233ff');
     });
 });
 
@@ -30,11 +32,16 @@ describe('makePalette', () => {
         const eightCharKeys: Array<keyof ColorPalette> = ['selection', 'highlight'];
 
         Object.entries(palette).forEach(([key, value]) => {
-            if (eightCharKeys.includes(key as keyof ColorPalette)) {
-                expectHexColor(value, 8);
-            } else {
-                expectHexColor(value, 6);
-            }
+            expectHexColor(value, eightCharKeys.includes(key as keyof ColorPalette) ? 8 : 6);
         });
+    });
+
+    it('produces different accents across styles for the same seed', () => {
+        const standard = makePalette(mulberry32(99), 'dark', 'standard');
+        const vivid = makePalette(mulberry32(99), 'dark', 'vivid');
+        const muted = makePalette(mulberry32(99), 'dark', 'muted');
+
+        expect(vivid.accent1).not.toBe(standard.accent1);
+        expect(muted.accent1).not.toBe(standard.accent1);
     });
 });

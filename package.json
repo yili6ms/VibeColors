@@ -79,6 +79,7 @@
         "vibeColors.lastSeed": {
           "type": "number",
           "default": 0,
+          "scope": "machine",
           "description": "Last used seed for palette generation"
         },
         "vibeColors.savedPalettes": {
@@ -89,7 +90,13 @@
         "vibeColors.autoRefreshInterval": {
           "type": "number",
           "default": 0,
-          "description": "Auto-refresh interval in minutes (0 = disabled)"
+          "description": "Auto-refresh interval in minutes for Dynamic themes (0 = disabled)"
+        },
+        "vibeColors.autoThemePeriodMinutes": {
+          "type": "number",
+          "default": 10,
+          "minimum": 1,
+          "description": "How often the VibeColors Auto themes regenerate their colors, in minutes."
         }
       }
     },
@@ -178,6 +185,16 @@
         "label": "VibeColors Dynamic Muted Light",
         "uiTheme": "vs",
         "path": "./themes/VibeColors-dynamic-muted-light-theme.json"
+      },
+      {
+        "label": "VibeColors Auto Dark",
+        "uiTheme": "vs-dark",
+        "path": "./themes/VibeColors-auto-dark-theme.json"
+      },
+      {
+        "label": "VibeColors Auto Light",
+        "uiTheme": "vs",
+        "path": "./themes/VibeColors-auto-light-theme.json"
       }
     ]
   },
@@ -186,18 +203,15 @@
     "version:bump": "node ./scripts/bump-version.js",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
-    "pretest": "npm run compile && npm run lint",
-    "lint": "echo 'No linting configured'",
-    "test": "node ./out/tests/color-utils.test.js",
+    "pretest": "npm run compile",
+    "test": "vitest run",
     "prepare": "node ./scripts/setup-hooks.js"
   },
   "devDependencies": {
-    "@types/node": "^16.x",
+    "@types/node": "^20.0.0",
     "@types/vscode": "^1.104.0",
+    "@vscode/vsce": "^3.0.0",
     "typescript": "^4.9.4",
     "vitest": "^0.34.6"
-  },
-  "dependencies": {
-    "vsce": "^2.15.0"
   }
 }

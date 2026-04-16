@@ -3,7 +3,17 @@ node_modules
 .env
 dist/
 build/
+out/
 .DS_Store
 *.log
-.vscode/
 .idea/
+
+# Compiled TypeScript artifacts at the repo root
+/*.js
+/*.js.map
+!generate-dynamic-colors.js
+
+# Ignore .vscode/ by default but keep the committed dev-host configs
+.vscode/*
+!.vscode/launch.json
+!.vscode/tasks.json

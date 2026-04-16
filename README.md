@@ -41,6 +41,9 @@ A comprehensive VS Code theme collection featuring **17 unique themes** plus **i
 - **Dynamic Vivid Dark/Light** - Higher saturation accents and punchier contrast
 - **Dynamic Muted Dark/Light** - Softer saturation for a calmer look
 
+### **Auto Themes**
+- **Auto Dark / Auto Light** - Automatically rotate their colors every 10 minutes by default. Adjust the cadence with the `vibeColors.autoThemePeriodMinutes` setting.
+
 ## 🚀 Dynamic Theme System
 
 ### **Instant Generation**
@@ -141,9 +144,10 @@ Each dynamic generation creates unique combinations:
 ### **Extension Settings**
 ```json
 {
-  "vibeColors.persistSeed": false,        // Remember seeds between sessions
-  "vibeColors.autoRefreshInterval": 0,    // Auto-refresh minutes (0 = disabled)
-  "vibeColors.savedPalettes": []          // Your saved color schemes
+  "vibeColors.persistSeed": false,            // Remember seeds between sessions
+  "vibeColors.autoRefreshInterval": 0,        // Auto-refresh minutes for Dynamic themes (0 = disabled)
+  "vibeColors.autoThemePeriodMinutes": 10,    // Rotation cadence for the Auto themes
+  "vibeColors.savedPalettes": []              // Your saved color schemes
 }
 ```
 
@@ -159,8 +163,15 @@ git clone https://github.com/yili6ms/VibeColors.git
 cd VibeColors
 npm install
 npm run compile
-vsce package
+npx vsce package
 ```
+
+> **Heads up for contributors:** `npm install` installs a `pre-push` hook
+> (`.githooks/pre-push`) that bumps the patch version in `package.json` and
+> commits it before every push. The first push of a new change will abort with
+> exit 1 after creating the bump commit — just run `git push` again to include
+> both commits. Set `VIBECOLORS_SKIP_VERSION_BUMP=1` or `CI=true` in your
+> environment to skip the hook.
 
 ## 💡 Tips & Workflows
 
