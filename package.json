@@ -66,6 +66,21 @@
         "command": "vibeColors.regenerateDynamicConfig",
         "title": "Regenerate Dynamic Configuration",
         "category": "VibeColors"
+      },
+      {
+        "command": "vibeColors.shuffleNext",
+        "title": "Shuffle: Next Theme",
+        "category": "VibeColors"
+      },
+      {
+        "command": "vibeColors.shufflePick",
+        "title": "Shuffle: Pick Theme...",
+        "category": "VibeColors"
+      },
+      {
+        "command": "vibeColors.shuffleReseed",
+        "title": "Shuffle: Reshuffle With New Random Seed",
+        "category": "VibeColors"
       }
     ],
     "configuration": {
@@ -97,6 +112,78 @@
           "default": 10,
           "minimum": 1,
           "description": "How often the VibeColors Auto themes regenerate their colors, in minutes."
+        },
+        "vibeColors.shuffle.intervalMinutes": {
+          "type": "number",
+          "default": 10,
+          "minimum": 0,
+          "description": "How often the VibeColors Shuffle themes switch to the next theme in their playlist, in minutes (0 = switch only on demand)."
+        },
+        "vibeColors.shuffle.sessionSeed": {
+          "type": [
+            "number",
+            "string"
+          ],
+          "default": 0,
+          "markdownDescription": "Seed for the Shuffle playlist order and its random palettes. `0` picks a new random seed when VS Code starts (windows opened later join the running session). Set it to a number or hex string (e.g. `\"3f9a12c4\"`) to replay the same sequence; changing it restarts that sequence."
+        },
+        "vibeColors.shuffle.sources": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "builtinThemes",
+              "themeFiles",
+              "builtinSeeds",
+              "seeds",
+              "savedPalettes",
+              "random"
+            ],
+            "enumDescriptions": [
+              "The static VibeColors themes (Neon, Ocean, Pastel, ...).",
+              "Theme files listed in vibeColors.shuffle.themeFiles.",
+              "Curated, pre-generated palette seeds bundled with VibeColors.",
+              "Seeds listed in vibeColors.shuffle.seeds.",
+              "Palettes saved with \"VibeColors: Save Current Palette\".",
+              "Palettes generated from the session seed when VS Code starts (see vibeColors.shuffle.randomCount)."
+            ]
+          },
+          "default": [
+            "builtinThemes",
+            "themeFiles",
+            "builtinSeeds",
+            "seeds",
+            "savedPalettes",
+            "random"
+          ],
+          "description": "Where the VibeColors Shuffle themes get their playlist from. Only entries matching the Shuffle theme's dark/light variant are used."
+        },
+        "vibeColors.shuffle.randomCount": {
+          "type": "integer",
+          "default": 4,
+          "minimum": 0,
+          "maximum": 50,
+          "description": "How many random palettes to pre-generate from the session seed for each Shuffle variant."
+        },
+        "vibeColors.shuffle.seeds": {
+          "type": "array",
+          "items": {
+            "type": [
+              "number",
+              "string"
+            ]
+          },
+          "default": [],
+          "markdownDescription": "Extra palette seeds for the Shuffle playlist: numbers or hex strings as shown by VibeColors, optionally with a style suffix, e.g. `\"3f9a12c4\"` or `\"3f9a12c4:vivid\"` (`standard`, `vivid`, `muted`)."
+        },
+        "vibeColors.shuffle.themeFiles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "markdownDescription": "Extra VS Code color theme JSON files (or folders of them) for the Shuffle playlist. Supports `~`, `${userHome}` and `${workspaceFolder}`; relative paths resolve against the workspace folder. Dark/light is detected from the theme's `type` or editor background."
         }
       }
     },
@@ -159,42 +246,62 @@
       {
         "label": "VibeColors Dynamic Dark",
         "uiTheme": "vs-dark",
-        "path": "./themes/VibeColors-dynamic-dark-theme.json"
+        "path": "./themes/VibeColors-dynamic-dark-theme.json",
+        "_watch": true
       },
       {
         "label": "VibeColors Dynamic Light",
         "uiTheme": "vs",
-        "path": "./themes/VibeColors-dynamic-light-theme.json"
+        "path": "./themes/VibeColors-dynamic-light-theme.json",
+        "_watch": true
       },
       {
         "label": "VibeColors Dynamic Vivid Dark",
         "uiTheme": "vs-dark",
-        "path": "./themes/VibeColors-dynamic-vivid-dark-theme.json"
+        "path": "./themes/VibeColors-dynamic-vivid-dark-theme.json",
+        "_watch": true
       },
       {
         "label": "VibeColors Dynamic Vivid Light",
         "uiTheme": "vs",
-        "path": "./themes/VibeColors-dynamic-vivid-light-theme.json"
+        "path": "./themes/VibeColors-dynamic-vivid-light-theme.json",
+        "_watch": true
       },
       {
         "label": "VibeColors Dynamic Muted Dark",
         "uiTheme": "vs-dark",
-        "path": "./themes/VibeColors-dynamic-muted-dark-theme.json"
+        "path": "./themes/VibeColors-dynamic-muted-dark-theme.json",
+        "_watch": true
       },
       {
         "label": "VibeColors Dynamic Muted Light",
         "uiTheme": "vs",
-        "path": "./themes/VibeColors-dynamic-muted-light-theme.json"
+        "path": "./themes/VibeColors-dynamic-muted-light-theme.json",
+        "_watch": true
       },
       {
         "label": "VibeColors Auto Dark",
         "uiTheme": "vs-dark",
-        "path": "./themes/VibeColors-auto-dark-theme.json"
+        "path": "./themes/VibeColors-auto-dark-theme.json",
+        "_watch": true
       },
       {
         "label": "VibeColors Auto Light",
         "uiTheme": "vs",
-        "path": "./themes/VibeColors-auto-light-theme.json"
+        "path": "./themes/VibeColors-auto-light-theme.json",
+        "_watch": true
+      },
+      {
+        "label": "VibeColors Shuffle Dark",
+        "uiTheme": "vs-dark",
+        "path": "./themes/VibeColors-shuffle-dark-theme.json",
+        "_watch": true
+      },
+      {
+        "label": "VibeColors Shuffle Light",
+        "uiTheme": "vs",
+        "path": "./themes/VibeColors-shuffle-light-theme.json",
+        "_watch": true
       }
     ]
   },

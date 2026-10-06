@@ -1,11 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import {
+    getShuffleThemeFileName,
+    getShuffleThemeName,
     getThemeFileName,
     getThemeName,
     getThemeStyleFromName,
     getThemeVariantFromName,
     isAutoTheme,
-    isDynamicTheme
+    isDynamicTheme,
+    isShuffleTheme
 } from '../theme-naming';
 
 describe('getThemeVariantFromName', () => {
@@ -99,5 +102,28 @@ describe('isAutoTheme', () => {
         expect(isAutoTheme('VibeColors Dynamic Dark')).toBe(false);
         expect(isAutoTheme('VibeColors Dark')).toBe(false);
         expect(isAutoTheme('Monokai')).toBe(false);
+    });
+});
+
+describe('Shuffle themes', () => {
+    it('round-trips names and variants', () => {
+        expect(getShuffleThemeName('dark')).toBe('VibeColors Shuffle Dark');
+        expect(getShuffleThemeName('light')).toBe('VibeColors Shuffle Light');
+        expect(getThemeVariantFromName(getShuffleThemeName('dark'))).toBe('dark');
+        expect(getThemeVariantFromName(getShuffleThemeName('light'))).toBe('light');
+    });
+
+    it('builds the file names package.json contributes', () => {
+        expect(getShuffleThemeFileName('dark')).toBe('VibeColors-shuffle-dark-theme.json');
+        expect(getShuffleThemeFileName('light')).toBe('VibeColors-shuffle-light-theme.json');
+    });
+
+    it('is recognized as Shuffle but never as a Dynamic or Auto theme', () => {
+        expect(isShuffleTheme('VibeColors Shuffle Dark')).toBe(true);
+        expect(isShuffleTheme('VibeColors Shuffle Light')).toBe(true);
+        expect(isShuffleTheme('VibeColors Dynamic Dark')).toBe(false);
+        expect(isShuffleTheme('VibeColors Dark')).toBe(false);
+        expect(isDynamicTheme('VibeColors Shuffle Dark')).toBe(false);
+        expect(isAutoTheme('VibeColors Shuffle Light')).toBe(false);
     });
 });

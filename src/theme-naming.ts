@@ -48,3 +48,18 @@ export function isDynamicTheme(themeName: string): boolean {
 export function isAutoTheme(themeName: string): boolean {
     return themeName.startsWith('VibeColors Auto');
 }
+
+// The Shuffle themes rotate through a playlist of pre-set theme files and
+// pre-generated seeds. They are intentionally *not* Dynamic themes: the
+// Dynamic refresh/auto-refresh code paths must leave them alone.
+export function isShuffleTheme(themeName: string): boolean {
+    return themeName.startsWith('VibeColors Shuffle');
+}
+
+export function getShuffleThemeName(variant: ThemeVariant): string {
+    return `VibeColors Shuffle ${variant === 'dark' ? 'Dark' : 'Light'}`;
+}
+
+export function getShuffleThemeFileName(variant: ThemeVariant): string {
+    return `VibeColors-shuffle-${variant}-theme.json`;
+}

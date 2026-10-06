@@ -2,11 +2,13 @@
 [![VS Code Extension CI](https://github.com/yili6ms/VibeColors/actions/workflows/ci.yml/badge.svg)](https://github.com/yili6ms/VibeColors/actions/workflows/ci.yml)
 [Latest VSIX](https://github.com/yili6ms/VibeColors/releases/latest/download/vibecolors-latest.vsix)
 
-A comprehensive VS Code theme collection featuring **17 unique themes** plus **infinite dynamic color generation**. From carefully crafted static themes to algorithmically generated palettes, VibeColors offers the ultimate customization for your coding environment.
+A comprehensive VS Code theme collection featuring **21 unique themes** plus **infinite dynamic color generation**. From carefully crafted static themes to algorithmically generated palettes, VibeColors offers the ultimate customization for your coding environment.
 
 ## 🌟 Features
 
-🎨 **17 Distinct Theme Variants** - Carefully designed themes for every mood and environment
+🎨 **21 Distinct Theme Variants** - Carefully designed themes for every mood and environment
+
+🔀 **Shuffle Themes** - A new random playlist of themes every time VS Code starts, switched automatically or on demand
 
 🎲 **Dynamic Theme Generation** - Infinite random color schemes with mathematical harmony
 
@@ -43,6 +45,31 @@ A comprehensive VS Code theme collection featuring **17 unique themes** plus **i
 
 ### **Auto Themes**
 - **Auto Dark / Auto Light** - Automatically rotate their colors every 10 minutes by default. Adjust the cadence with the `vibeColors.autoThemePeriodMinutes` setting.
+
+### **Shuffle Themes**
+- **Shuffle Dark / Shuffle Light** - Play a shuffled playlist of complete themes and switch to the next one every 10 minutes by default (`vibeColors.shuffle.intervalMinutes`, `0` = only on demand). Every VS Code start picks a new random session seed, which sets the order and the random palettes, so each session opens on a different theme. All open windows share one session: windows opened (or reloaded) later join it, and the theme switches once per interval no matter how many windows are open.
+
+The playlist mixes these sources (choose them with `vibeColors.shuffle.sources`):
+
+| Source | What it adds |
+| --- | --- |
+| `builtinThemes` | The static VibeColors themes above (Neon, Ocean, Pastel, ...) |
+| `themeFiles` | Your own VS Code color theme JSON files or folders from `vibeColors.shuffle.themeFiles` |
+| `builtinSeeds` | Curated, pre-generated palette seeds (e.g. *Lagoon*, *Ember*, *Glacier*) chosen for contrast and hue variety |
+| `seeds` | Your own seeds from `vibeColors.shuffle.seeds`, e.g. `"2b3bb345"` or `"2b3bb345:vivid"` |
+| `savedPalettes` | Palettes saved with `VibeColors: Save Current Palette` |
+| `random` | `vibeColors.shuffle.randomCount` palettes generated from the session seed at startup |
+
+Only entries matching the theme's variant are used: Shuffle Dark plays dark themes and Shuffle Light plays light ones. Your own theme files are classified by their `type` or editor background, may contain comments, and can `include` other JSON themes.
+
+Switch at runtime with the status bar item or these commands:
+- `VibeColors: Shuffle: Next Theme` - Skip to the next theme now (also switches to a Shuffle theme if you are not using one)
+- `VibeColors: Shuffle: Pick Theme...` - Browse the playlist; arrow keys preview, Enter switches, Escape restores
+- `VibeColors: Shuffle: Reshuffle With New Random Seed` - New order and new random palettes
+- `VibeColors: Switch Dark/Light Variant` - Toggle between Shuffle Dark and Shuffle Light
+- `VibeColors: Save Current Palette` - Keep the generated palette that is showing (theme-file entries have no seed to save)
+
+To replay a session, set `vibeColors.shuffle.sessionSeed` to the seed shown in the status bar tooltip. Setting a fixed seed restarts its sequence right away; setting it back to `0` takes effect on the next start.
 
 ## 🚀 Dynamic Theme System
 
@@ -84,7 +111,7 @@ code --install-extension vibecolors-latest.vsix
 ### **First Use**
 - Extension auto-activates with a random dynamic theme
 - Use Command Palette (`Ctrl+Shift+P`) → "VibeColors" to explore features
-- Switch between 17 built-in themes or generate infinite dynamic ones
+- Switch between 21 built-in themes or generate infinite dynamic ones
 
 ## 🎯 What's Enhanced
 
@@ -147,7 +174,13 @@ Each dynamic generation creates unique combinations:
   "vibeColors.persistSeed": false,            // Remember seeds between sessions
   "vibeColors.autoRefreshInterval": 0,        // Auto-refresh minutes for Dynamic themes (0 = disabled)
   "vibeColors.autoThemePeriodMinutes": 10,    // Rotation cadence for the Auto themes
-  "vibeColors.savedPalettes": []              // Your saved color schemes
+  "vibeColors.savedPalettes": [],             // Your saved color schemes
+  "vibeColors.shuffle.intervalMinutes": 10,   // Shuffle switch cadence (0 = on demand only)
+  "vibeColors.shuffle.sessionSeed": 0,        // 0 = new random order every start; or a fixed seed
+  "vibeColors.shuffle.sources": ["builtinThemes", "themeFiles", "builtinSeeds", "seeds", "savedPalettes", "random"],
+  "vibeColors.shuffle.randomCount": 4,        // Random palettes generated per session
+  "vibeColors.shuffle.seeds": [],             // e.g. ["2b3bb345", "d064178e:vivid"]
+  "vibeColors.shuffle.themeFiles": []         // e.g. ["~/themes", "${workspaceFolder}/my-theme.json"]
 }
 ```
 
@@ -200,7 +233,7 @@ npx vsce package
 
 ## 🌟 What Makes VibeColors Special
 
-- **17 Built-in Themes** - Each with distinct personality and use case
+- **21 Built-in Themes** - Each with distinct personality and use case
 - **Infinite Dynamic Generation** - Mathematical color harmony algorithms
 - **Real-time Application** - Instant theme switching with no restart required
 - **Palette Management** - Save, organize, and share favorite combinations
